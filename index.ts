@@ -1,5 +1,26 @@
 import { vec } from '@basementuniverse/vec';
 
+export type SpriteOptionsData = Partial<Omit<
+  SpriteOptions,
+  | 'image'
+  | 'preRender'
+  | 'postRender'
+  | 'debug'
+>> & {
+  imageName?: string;
+  animations?: {
+    [name: string]: {
+      [direction: string]: SpriteAnimationOptionsData;
+    };
+  };
+};
+
+export type SpriteAnimationOptionsData = Omit<
+  SpriteAnimationOptions, 'images'
+> & {
+  imageNames?: string[];
+};
+
 export type SpriteOptions = {
   /**
    * The position of the sprite
@@ -119,11 +140,13 @@ export type SpriteOptions = {
    * same value), or an object allowing specific debug options to be enabled
    * individually
    */
-  debug?: {
-    showSpriteTransforms?: boolean;
-    showSpriteBoundingBox?: boolean;
-    showAttachmentPoints?: boolean;
-  } | boolean;
+  debug?: Partial<SpriteDebugOptions> | boolean;
+};
+
+type SpriteDebugOptions = {
+  showSpriteTransforms: boolean;
+  showSpriteBoundingBox: boolean;
+  showAttachmentPoints: boolean;
 };
 
 export enum SpriteAnimationRepeatMode {
@@ -261,11 +284,7 @@ export class Sprite {
   private static readonly DEBUG_ATTACHMENT_POINT_SIZE = 5;
 
   private options: SpriteOptions & {
-    debug: {
-      showSpriteTransforms: boolean;
-      showSpriteBoundingBox: boolean;
-      showAttachmentPoints: boolean;
-    };
+    debug: Required<SpriteDebugOptions>;
   };
 
   public position: vec = vec();
@@ -700,4 +719,65 @@ export class Sprite {
 
     context.restore();
   }
+}
+
+/**
+ * Content Manager Processor wrapper which converts SpriteOptionsData into
+ * SpriteOptions
+ *
+ * @see https://www.npmjs.com/package/@basementuniverse/content-manager
+ */
+export async function spriteOptionsContentProcessor(
+  content: Record<string, {
+    name: string;
+    type: string;
+    content: any;
+    status: number;
+  }>,
+  data: {
+    name: string;
+    type: string;
+    content: SpriteOptionsData;
+    status: number;
+  }
+): Promise<void> {
+  const getImageFromContent = (name: string):
+    | HTMLImageElement
+    | HTMLCanvasElement
+    | null => {
+    const image = content[name]?.content;
+    if (!image) {
+      throw new Error(`Image '${name}' not found`);
+    }
+
+    return image;
+  };
+
+  const result: any = data;
+  if (result.imageName) {
+    result.image = getImageFromContent(result.imageName);
+    delete result.imageName;
+  }
+
+  if (result.animations) {
+    for (const [animationName, animation] of (
+      Object.entries(result.animations) as [
+        string,
+        {
+          [direction: string]: SpriteAnimationOptionsData;
+        }
+      ][]
+    )) {
+      for (const [directionName, direction] of Object.entries(animation)) {
+        if (direction.imageNames) {
+          result.animations[animationName][directionName].images = direction
+            .imageNames
+            .map(getImageFromContent);
+          delete result.animations[animationName][directionName].imageNames;
+        }
+      }
+    }
+  }
+
+  data.content = result as SpriteOptions;
 }
