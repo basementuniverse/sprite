@@ -612,9 +612,7 @@ export class Sprite {
     context.scale(this.scale, this.scale);
     context.rotate(this.rotation);
 
-    if (this.options.preRender) {
-      this.options.preRender(context, this);
-    }
+    this.options.preRender?.(context, this);
 
     if (this.currentImage) {
       context.drawImage(
@@ -626,9 +624,7 @@ export class Sprite {
       );
     }
 
-    if (this.options.postRender) {
-      this.options.postRender(context, this);
-    }
+    this.options.postRender?.(context, this);
 
     if (this.options.debug.showSpriteBoundingBox) {
       context.strokeStyle = Sprite.DEBUG_BOUNDING_BOX_COLOUR;
