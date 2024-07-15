@@ -181,6 +181,45 @@ export type SpriteOptions = {
    */
   debug?: Partial<SpriteDebugOptions> | boolean;
 };
+
+export type SpriteAnimationOptions = {
+  /**
+   * The name of this animation
+   */
+  name: string;
+
+  /**
+   * The number of frames in this animation
+   */
+  frameCount: number;
+
+  /**
+   * The number of frames per second when playing this animation
+   */
+  frameRate: number;
+
+  /**
+   * The repeat mode for this animation
+   */
+  mode: SpriteAnimationRepeatMode;
+
+  /**
+   * A list of images to use for each frame
+   *
+   * If this list is longer than frameCount, some images won't be used
+   *
+   * If this list if shorter than frameCount, we fall back to the base image
+   * or don't show an image for some frames
+   */
+  images?: (HTMLImageElement | HTMLCanvasElement)[];
+
+  /**
+   * Keyframes for attachment points
+   */
+  attachmentPointKeyframes?: {
+    [attachmentPointName: string]: SpriteAttachmentPointKeyframe[];
+  };
+};
 ```
 
 _(see `build/index.d.ts` for more details)_
@@ -197,3 +236,17 @@ sprite.getAttachmentPoint('weapon-left-hand');
 ```
 
 This could be useful for connecting multiple sprites together.
+
+## Content processor
+
+A content processor function is provided for use with the [Content Manager](https://www.npmjs.com/package/@basementuniverse/content-manager).
+
+```ts
+import { spriteOptionsContentProcessor } from '@basementuniverse/sprite';
+```
+
+This function will take a JSON object resembling the `SpriteOptions` type (see below for an explanation of differences) and return a `SpriteOptions` object which can be passed into the `Sprite` constructor.
+
+* The JSON object may have an `imageName: string` field instead of `image`. The image name will be used to fetch the image from the content manager, and the `imageName` field will then be replaced with an `image` field, containing the fetched image.
+
+* Similarly, the JSON object may have an `imageNames: string[]` field instead of `images` in each animation. These images will be loaded from the content manager and the `imageNames` field will be replaced with an `images` field, containing the fetched images.
