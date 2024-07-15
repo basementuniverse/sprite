@@ -1,4 +1,15 @@
 import { vec } from '@basementuniverse/vec';
+export type SpriteOptionsData = Partial<Omit<SpriteOptions, 'image' | 'preRender' | 'postRender' | 'debug'>> & {
+    imageName?: string;
+    animations?: {
+        [name: string]: {
+            [direction: string]: SpriteAnimationOptionsData;
+        };
+    };
+};
+export type SpriteAnimationOptionsData = Omit<SpriteAnimationOptions, 'images'> & {
+    imageNames?: string[];
+};
 export type SpriteOptions = {
     /**
      * The position of the sprite
@@ -99,11 +110,12 @@ export type SpriteOptions = {
      * same value), or an object allowing specific debug options to be enabled
      * individually
      */
-    debug?: {
-        showSpriteTransforms?: boolean;
-        showSpriteBoundingBox?: boolean;
-        showAttachmentPoints?: boolean;
-    } | boolean;
+    debug?: Partial<SpriteDebugOptions> | boolean;
+};
+type SpriteDebugOptions = {
+    showSpriteTransforms: boolean;
+    showSpriteBoundingBox: boolean;
+    showAttachmentPoints: boolean;
 };
 export declare enum SpriteAnimationRepeatMode {
     /**
@@ -221,3 +233,21 @@ export declare class Sprite {
     private drawTransformsMarker;
     private drawCross;
 }
+/**
+ * Content Manager Processor wrapper which converts SpriteOptionsData into
+ * SpriteOptions
+ *
+ * @see https://www.npmjs.com/package/@basementuniverse/content-manager
+ */
+export declare function spriteOptionsContentProcessor(content: Record<string, {
+    name: string;
+    type: string;
+    content: any;
+    status: number;
+}>, data: {
+    name: string;
+    type: string;
+    content: SpriteOptionsData;
+    status: number;
+}): Promise<void>;
+export {};
