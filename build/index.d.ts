@@ -247,7 +247,7 @@ export declare function spriteOptionsContentProcessor(content: Record<string, {
 }>, data: {
     name: string;
     type: string;
-    content: SpriteOptionsData;
+    content: any;
     status: number;
 }): Promise<void>;
 export {};

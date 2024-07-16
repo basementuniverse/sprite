@@ -733,7 +733,7 @@ export async function spriteOptionsContentProcessor(
   data: {
     name: string;
     type: string;
-    content: SpriteOptionsData;
+    content: any;
     status: number;
   }
 ): Promise<void> {
