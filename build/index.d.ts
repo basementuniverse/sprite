@@ -121,15 +121,15 @@ export declare enum SpriteAnimationRepeatMode {
     /**
      * Loop this animation indefinitely
      */
-    Repeat = 0,
+    Repeat = "repeat",
     /**
      * Play once and then stop on the last frame
      */
-    PlayOnceAndStop = 1,
+    PlayOnceAndStop = "play-once-and-stop",
     /**
      * Play once and then reset back to the first frame
      */
-    PlayOnceAndReset = 2
+    PlayOnceAndReset = "play-once-and-reset"
 }
 export type SpriteAnimationOptions = {
     /**
@@ -193,6 +193,7 @@ export type SpriteAttachmentPointKeyframe = {
 export type SpriteAttachmentPointMap = Record<string, vec>;
 export declare class Sprite {
     private static readonly DEFAULT_OPTIONS;
+    private static readonly DEFAULT_ANIMATION_OPTIONS;
     private static readonly DEBUG_BOUNDING_BOX_COLOUR;
     private static readonly DEBUG_BOUNDING_BOX_LINE_WIDTH;
     private static readonly DEBUG_TRANSFORMS_COLOUR_X;

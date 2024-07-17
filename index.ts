@@ -153,17 +153,17 @@ export enum SpriteAnimationRepeatMode {
   /**
    * Loop this animation indefinitely
    */
-  Repeat = 0,
+  Repeat = 'repeat',
 
   /**
    * Play once and then stop on the last frame
    */
-  PlayOnceAndStop,
+  PlayOnceAndStop = 'play-once-and-stop',
 
   /**
    * Play once and then reset back to the first frame
    */
-  PlayOnceAndReset,
+  PlayOnceAndReset = 'play-once-and-reset',
 }
 
 export type SpriteAnimationOptions = {
@@ -271,6 +271,13 @@ export class Sprite {
     defaultAnimation: 'default',
   };
 
+  private static readonly DEFAULT_ANIMATION_OPTIONS: SpriteAnimationOptions = {
+    name: 'default',
+    frameCount: 1,
+    frameRate: 1,
+    mode: SpriteAnimationRepeatMode.Repeat,
+  };
+
   private static readonly DEBUG_BOUNDING_BOX_COLOUR = 'green';
   private static readonly DEBUG_BOUNDING_BOX_LINE_WIDTH = 2;
 
@@ -308,6 +315,18 @@ export class Sprite {
       Sprite.DEFAULT_OPTIONS,
       options ?? {}
     );
+
+    for (const animation of Object.keys(actualOptions.animations)) {
+      for (const direction of Object.keys(
+        actualOptions.animations[animation]
+      )) {
+        actualOptions.animations[animation][direction] = Object.assign(
+          {},
+          Sprite.DEFAULT_ANIMATION_OPTIONS,
+          actualOptions.animations[animation][direction]
+        );
+      }
+    }
 
     if (!actualOptions.debug || actualOptions.debug === true) {
       actualOptions.debug = {
