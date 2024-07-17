@@ -447,7 +447,21 @@ export class Sprite {
 
   public set animation(value: string) {
     if (Object.keys(this.options.animations).includes(value)) {
+      const previous = this._animation;
       this._animation = value;
+
+      // When switching animations, we might be part-way through and the
+      // new animation might have fewer frames, in which case we should clamp
+      // the current frame number
+      const currentFrameCount = this.options.animations[value][this.direction]?.frameCount ?? 1;
+      const previousFrameCount = this.options.animations[previous][this.direction]?.frameCount ?? 1;
+      if (
+        currentFrameCount < previousFrameCount &&
+        this.currentAnimationState &&
+        this.currentAnimationState.currentFrame >= currentFrameCount
+      ) {
+        this.currentAnimationState.currentFrame = currentFrameCount - 1;
+      }
     }
   }
 
@@ -525,7 +539,7 @@ export class Sprite {
         this.currentAnimationState.currentFrame++;
         this.currentAnimationState.currentFrameTime = 0;
 
-        if (this.currentAnimationState.currentFrame > frameCount) {
+        if (this.currentAnimationState.currentFrame >= frameCount) {
           switch (this.currentAnimationOptions.mode) {
             case SpriteAnimationRepeatMode.PlayOnceAndReset:
               this.currentAnimationState.playing = false;
