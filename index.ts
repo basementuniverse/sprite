@@ -768,7 +768,7 @@ export async function spriteOptionsContentProcessor(
     return image;
   };
 
-  const result: any = data;
+  const result: any = data.content;
   if (result.imageName) {
     result.image = getImageFromContent(result.imageName);
     delete result.imageName;
