@@ -1,12 +1,12 @@
-import { vec } from '@basementuniverse/vec';
+import { vec2 } from '@basementuniverse/vec';
 
-export type SpriteOptionsData = Partial<Omit<
-  SpriteOptions,
-  | 'image'
-  | 'preRender'
-  | 'postRender'
-  | 'debug'
->> & {
+// -----------------------------------------------------------------------------
+// TYPES
+// -----------------------------------------------------------------------------
+
+export type SpriteOptionsData = Partial<
+  Omit<SpriteOptions, 'image' | 'preRender' | 'postRender' | 'debug'>
+> & {
   imageName?: string;
   animations?: {
     [name: string]: {
@@ -16,7 +16,8 @@ export type SpriteOptionsData = Partial<Omit<
 };
 
 export type SpriteAnimationOptionsData = Omit<
-  SpriteAnimationOptions, 'images'
+  SpriteAnimationOptions,
+  'images'
 > & {
   imageNames?: string[];
 };
@@ -27,7 +28,7 @@ export type SpriteOptions = {
    *
    * Defaults to (0, 0)
    */
-  position?: vec;
+  position?: vec2;
 
   /**
    * The base size of the sprite
@@ -37,7 +38,7 @@ export type SpriteOptions = {
    *
    * If a size still can't be found, default to (0, 0)
    */
-  size?: vec;
+  size?: vec2;
 
   /**
    * Origin offset from top-left corner, used for rotation and scaling
@@ -47,7 +48,7 @@ export type SpriteOptions = {
    *
    * @see SpriteOptions.size
    */
-  origin?: vec;
+  origin?: vec2;
 
   /**
    * The scale factor of the sprite
@@ -120,18 +121,12 @@ export type SpriteOptions = {
   /**
    * Optional hook called before rendering the sprite image
    */
-  preRender?: (
-    context: CanvasRenderingContext2D,
-    sprite: Sprite
-  ) => void;
+  preRender?: (context: CanvasRenderingContext2D, sprite: Sprite) => void;
 
   /**
    * Optional hook called after rendering the sprite image
    */
-  postRender?: (
-    context: CanvasRenderingContext2D,
-    sprite: Sprite
-  ) => void;
+  postRender?: (context: CanvasRenderingContext2D, sprite: Sprite) => void;
 
   /**
    * Optional debug options
@@ -232,7 +227,7 @@ export type SpriteAttachmentPointOptions = {
    * The position offset of this attachment point, measured from the origin
    * position of this sprite
    */
-  offset: vec;
+  offset: vec2;
 };
 
 export type SpriteAttachmentPointKeyframe = {
@@ -249,10 +244,194 @@ export type SpriteAttachmentPointKeyframe = {
   /**
    * The attachment point offset for this keyframe
    */
-  offset: vec;
+  offset: vec2;
 };
 
-export type SpriteAttachmentPointMap = Record<string, vec>;
+export type SpriteAttachmentPointMap = Record<string, vec2>;
+
+// -----------------------------------------------------------------------------
+// TYPE GUARDS
+// -----------------------------------------------------------------------------
+
+function isVec2(value: unknown): value is vec2 {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'x' in value &&
+    'y' in value &&
+    typeof (value as { x: unknown; y: unknown }).x === 'number' &&
+    typeof (value as { x: unknown; y: unknown }).y === 'number'
+  );
+}
+
+function isSpriteAnimationOptionsData(
+  value: unknown
+): value is SpriteAnimationOptionsData {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if (!('name' in value) || typeof value.name !== 'string') {
+    return false;
+  }
+  if (!('frameCount' in value) || typeof value.frameCount !== 'number') {
+    return false;
+  }
+  if (!('frameRate' in value) || typeof value.frameRate !== 'number') {
+    return false;
+  }
+  if (
+    !('mode' in value) ||
+    !Object.values(SpriteAnimationRepeatMode).includes(
+      value.mode as SpriteAnimationRepeatMode
+    )
+  ) {
+    return false;
+  }
+  if ('imageNames' in value) {
+    if (!Array.isArray(value.imageNames)) {
+      return false;
+    }
+    if (
+      !value.imageNames.every(
+        (imageName: unknown) => typeof imageName === 'string'
+      )
+    ) {
+      return false;
+    }
+  }
+  if (
+    'attachmentPointKeyframes' in value &&
+    typeof value.attachmentPointKeyframes === 'object' &&
+    value.attachmentPointKeyframes !== null
+  ) {
+    for (const [attachmentPointName, keyframes] of Object.entries(
+      value.attachmentPointKeyframes
+    )) {
+      if (typeof attachmentPointName !== 'string') {
+        return false;
+      }
+      if (!Array.isArray(keyframes)) {
+        return false;
+      }
+      if (!keyframes.every(isSpriteAttachmentPointKeyframe)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function isSpriteAttachmentPointOptions(
+  value: unknown
+): value is SpriteAttachmentPointOptions {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if (!('name' in value) || typeof value.name !== 'string') {
+    return false;
+  }
+  if (!('offset' in value) || !isVec2(value.offset)) {
+    return false;
+  }
+  return true;
+}
+
+function isSpriteAttachmentPointKeyframe(
+  value: unknown
+): value is SpriteAttachmentPointKeyframe {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if (!('frame' in value) || typeof value.frame !== 'number') {
+    return false;
+  }
+  if (!('offset' in value) || !isVec2(value.offset)) {
+    return false;
+  }
+  return true;
+}
+
+export function isSpriteOptionsData(
+  value: unknown
+): value is SpriteOptionsData {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+  if ('position' in value && !isVec2(value.position)) {
+    return false;
+  }
+  if ('size' in value && !isVec2(value.size)) {
+    return false;
+  }
+  if ('origin' in value && !isVec2(value.origin)) {
+    return false;
+  }
+  if ('scale' in value && typeof value.scale !== 'number') {
+    return false;
+  }
+  if ('rotation' in value && typeof value.rotation !== 'number') {
+    return false;
+  }
+  if ('directions' in value && !Array.isArray(value.directions)) {
+    return false;
+  }
+  if (
+    'defaultDirection' in value &&
+    typeof value.defaultDirection !== 'string'
+  ) {
+    return false;
+  }
+  if ('imageName' in value && typeof value.imageName !== 'string') {
+    return false;
+  }
+  if ('animations' in value) {
+    if (typeof value.animations !== 'object' || value.animations === null) {
+      return false;
+    }
+    for (const [animationName, animationDirections] of Object.entries(
+      value.animations
+    )) {
+      if (typeof animationName !== 'string') {
+        return false;
+      }
+      if (
+        typeof animationDirections !== 'object' ||
+        animationDirections === null
+      ) {
+        return false;
+      }
+      for (const [directionName, animationOptions] of Object.entries(
+        animationDirections
+      )) {
+        if (typeof directionName !== 'string') {
+          return false;
+        }
+        if (!isSpriteAnimationOptionsData(animationOptions)) {
+          return false;
+        }
+      }
+    }
+  }
+  if (
+    'defaultAnimation' in value &&
+    typeof value.defaultAnimation !== 'string'
+  ) {
+    return false;
+  }
+  if ('attachmentPoints' in value) {
+    if (!Array.isArray(value.attachmentPoints)) {
+      return false;
+    }
+    if (!value.attachmentPoints.every(isSpriteAttachmentPointOptions)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// -----------------------------------------------------------------------------
+// SPRITE CLASS
+// -----------------------------------------------------------------------------
 
 export class Sprite {
   private static readonly DEFAULT_OPTIONS: SpriteOptions = {
@@ -294,10 +473,10 @@ export class Sprite {
     debug: Required<SpriteDebugOptions>;
   };
 
-  public position: vec = vec();
-  public size: vec = vec();
+  public position: vec2 = vec2();
+  public size: vec2 = vec2();
 
-  public origin: vec = vec();
+  public origin: vec2 = vec2();
   public scale: number = 1;
   public rotation: number = 0;
 
@@ -339,18 +518,15 @@ export class Sprite {
     this.options = actualOptions as typeof this.options;
 
     if (this.options.position) {
-      this.position = vec.cpy(this.options.position);
+      this.position = vec2.cpy(this.options.position);
     }
 
     if (this.options.size) {
-      this.size = vec.cpy(this.options.size);
+      this.size = vec2.cpy(this.options.size);
     } else {
       // Default to the size of the base image if one exists
       if (this.options.image) {
-        this.size = vec(
-          this.options.image.width,
-          this.options.image.height
-        );
+        this.size = vec2(this.options.image.width, this.options.image.height);
       } else {
         // Fall back to the size of the image in the first frame of the first
         // available direction of the default animation if one exists
@@ -361,7 +537,7 @@ export class Sprite {
           defaultAnimationDirections &&
           (defaultAnimationDirections.images?.length ?? 0) > 0
         ) {
-          this.size = vec(
+          this.size = vec2(
             defaultAnimationDirections.images![0].width,
             defaultAnimationDirections.images![0].height
           );
@@ -372,10 +548,10 @@ export class Sprite {
     }
 
     if (this.options.origin) {
-      this.origin = vec.cpy(this.options.origin);
+      this.origin = vec2.cpy(this.options.origin);
     } else {
       // Default to the center of the sprite based on size
-      this.origin = vec.mul(this.size, 0.5);
+      this.origin = vec2.mul(this.size, 0.5);
     }
 
     if (this.options.scale) {
@@ -398,10 +574,7 @@ export class Sprite {
     // Check and initialise animation
     this._animation = this.options.defaultAnimation;
     const animations = Object.keys(this.options.animations);
-    if (
-      animations.length === 0 ||
-      !animations.includes(this._animation)
-    ) {
+    if (animations.length === 0 || !animations.includes(this._animation)) {
       throw new Error(`Invalid animation "${this._animation}"`);
     }
 
@@ -413,18 +586,14 @@ export class Sprite {
           this.options.animations[animation][direction].attachmentPointKeyframes
         ) {
           for (const attachmentPoint of Object.keys(
-            this
-              .options
-              .animations[animation][direction]
+            this.options.animations[animation][direction]
               .attachmentPointKeyframes!
           )) {
-            this
-              .options
-              .animations[animation][direction]
-              .attachmentPointKeyframes![attachmentPoint]
-              .sort(
-                (a, b) => a.frame - b.frame
-              );
+            this.options.animations[animation][
+              direction
+            ].attachmentPointKeyframes![attachmentPoint].sort(
+              (a, b) => a.frame - b.frame
+            );
           }
         }
       }
@@ -453,8 +622,10 @@ export class Sprite {
       // When switching animations, we might be part-way through and the
       // new animation might have fewer frames, in which case we should clamp
       // the current frame number
-      const currentFrameCount = this.options.animations[value][this.direction]?.frameCount ?? 1;
-      const previousFrameCount = this.options.animations[previous][this.direction]?.frameCount ?? 1;
+      const currentFrameCount =
+        this.options.animations[value][this.direction]?.frameCount ?? 1;
+      const previousFrameCount =
+        this.options.animations[previous][this.direction]?.frameCount ?? 1;
       if (
         currentFrameCount < previousFrameCount &&
         this.currentAnimationState &&
@@ -484,7 +655,7 @@ export class Sprite {
     }
   }
 
-  public getAttachmentPoint(name: string): vec | null {
+  public getAttachmentPoint(name: string): vec2 | null {
     return this.currentAttachmentPoints?.[name] ?? null;
   }
 
@@ -519,10 +690,7 @@ export class Sprite {
   }
 
   private updateAnimationState(dt: number): SpriteAnimationState {
-    if (
-      !this.currentAnimationOptions ||
-      !this.currentAnimationState
-    ) {
+    if (!this.currentAnimationOptions || !this.currentAnimationState) {
       return {
         playing: true,
         currentFrame: 0,
@@ -563,10 +731,7 @@ export class Sprite {
   }
 
   private updateImage(): HTMLImageElement | HTMLCanvasElement | null {
-    if (
-      !this.currentAnimationOptions ||
-      !this.currentAnimationState
-    ) {
+    if (!this.currentAnimationOptions || !this.currentAnimationState) {
       return null;
     }
 
@@ -577,9 +742,13 @@ export class Sprite {
       return this.options.image ?? null;
     }
 
-    return this.currentAnimationOptions.images[
-      this.currentAnimationState.currentFrame
-    ] ?? this.options.image ?? null;
+    return (
+      this.currentAnimationOptions.images[
+        this.currentAnimationState.currentFrame
+      ] ??
+      this.options.image ??
+      null
+    );
   }
 
   private updateAttachmentPoints(): SpriteAttachmentPointMap | null {
@@ -594,7 +763,7 @@ export class Sprite {
       this.currentAttachmentPoints = Object.fromEntries(
         this.options.attachmentPoints.map(attachmentPoint => [
           attachmentPoint.name,
-          attachmentPoint.offset
+          attachmentPoint.offset,
         ])
       );
     }
@@ -625,9 +794,9 @@ export class Sprite {
     keyframes: SpriteAttachmentPointKeyframe[],
     currentFrame: number
   ): SpriteAttachmentPointKeyframe {
-    const found = [...keyframes].reverse().find(
-      keyframe => keyframe.frame <= currentFrame
-    );
+    const found = [...keyframes]
+      .reverse()
+      .find(keyframe => keyframe.frame <= currentFrame);
 
     if (!found) {
       return keyframes[keyframes.length - 1];
@@ -638,10 +807,7 @@ export class Sprite {
 
   public draw(context: CanvasRenderingContext2D) {
     context.save();
-    context.translate(
-      this.position.x,
-      this.position.y
-    );
+    context.translate(this.position.x, this.position.y);
     context.scale(this.scale, this.scale);
     context.rotate(this.rotation);
 
@@ -673,7 +839,7 @@ export class Sprite {
     if (this.options.debug.showSpriteTransforms) {
       this.drawTransformsMarker(
         context,
-        vec(),
+        vec2(),
         Sprite.DEBUG_TRANSFORMS_COLOUR_X,
         Sprite.DEBUG_TRANSFORMS_COLOUR_Y,
         Sprite.DEBUG_TRANSFORMS_LINE_WIDTH,
@@ -685,7 +851,9 @@ export class Sprite {
       this.options.debug.showAttachmentPoints &&
       this.currentAttachmentPoints
     ) {
-      for (const attachmentPoint of Object.values(this.currentAttachmentPoints)) {
+      for (const attachmentPoint of Object.values(
+        this.currentAttachmentPoints
+      )) {
         this.drawCross(
           context,
           attachmentPoint,
@@ -701,7 +869,7 @@ export class Sprite {
 
   private drawTransformsMarker(
     context: CanvasRenderingContext2D,
-    position: vec,
+    position: vec2,
     xColour: string,
     yColour: string,
     lineWidth: number,
@@ -728,7 +896,7 @@ export class Sprite {
 
   private drawCross(
     context: CanvasRenderingContext2D,
-    position: vec,
+    position: vec2,
     colour: string,
     lineWidth: number,
     size: number
@@ -750,6 +918,10 @@ export class Sprite {
   }
 }
 
+// -----------------------------------------------------------------------------
+// CONTENT PROCESSOR
+// -----------------------------------------------------------------------------
+
 /**
  * Content Manager Processor wrapper which converts SpriteOptionsData into
  * SpriteOptions
@@ -757,23 +929,29 @@ export class Sprite {
  * @see https://www.npmjs.com/package/@basementuniverse/content-manager
  */
 export async function spriteOptionsContentProcessor(
-  content: Record<string, {
-    name: string;
-    type: string;
-    content: any;
-    status: number;
-  }>,
+  content: Record<
+    string,
+    {
+      name: string;
+      type: string;
+      content: any;
+      status: string;
+    }
+  >,
   data: {
     name: string;
     type: string;
     content: any;
-    status: number;
+    status: string;
   }
 ): Promise<void> {
-  const getImageFromContent = (name: string):
-    | HTMLImageElement
-    | HTMLCanvasElement
-    | null => {
+  if (!isSpriteOptionsData(data.content)) {
+    throw new Error('Invalid sprite config');
+  }
+
+  const getImageFromContent = (
+    name: string
+  ): HTMLImageElement | HTMLCanvasElement | null => {
     const image = content[name]?.content;
     if (!image) {
       throw new Error(`Image '${name}' not found`);
@@ -789,19 +967,18 @@ export async function spriteOptionsContentProcessor(
   }
 
   if (result.animations) {
-    for (const [animationName, animation] of (
-      Object.entries(result.animations) as [
-        string,
-        {
-          [direction: string]: SpriteAnimationOptionsData;
-        }
-      ][]
-    )) {
+    for (const [animationName, animation] of Object.entries(
+      result.animations
+    ) as [
+      string,
+      {
+        [direction: string]: SpriteAnimationOptionsData;
+      }
+    ][]) {
       for (const [directionName, direction] of Object.entries(animation)) {
         if (direction.imageNames) {
-          result.animations[animationName][directionName].images = direction
-            .imageNames
-            .map(getImageFromContent);
+          result.animations[animationName][directionName].images =
+            direction.imageNames.map(getImageFromContent);
           delete result.animations[animationName][directionName].imageNames;
         }
       }

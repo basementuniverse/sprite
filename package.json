@@ -2,19 +2,22 @@
   "name": "@basementuniverse/sprite",
   "version": "1.2.0",
   "description": "A component for rendering layered sprites with animations in 2d games",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
-  "scripts": {
-    "build": "webpack"
-  },
   "author": "Gordon Larrigan <gordonlarrigan@gmail.com> (https://gordonlarrigan.com)",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/basementuniverse/sprite.git"
   },
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "webpack"
+  },
   "dependencies": {
-    "@basementuniverse/vec": "^1.0.0"
+    "@basementuniverse/vec": "^2.3.5"
   },
   "devDependencies": {
     "@types/node": "^18.11.12",

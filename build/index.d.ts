@@ -1,4 +1,4 @@
-import { vec } from '@basementuniverse/vec';
+import { vec2 } from '@basementuniverse/vec';
 export type SpriteOptionsData = Partial<Omit<SpriteOptions, 'image' | 'preRender' | 'postRender' | 'debug'>> & {
     imageName?: string;
     animations?: {
@@ -16,7 +16,7 @@ export type SpriteOptions = {
      *
      * Defaults to (0, 0)
      */
-    position?: vec;
+    position?: vec2;
     /**
      * The base size of the sprite
      *
@@ -25,7 +25,7 @@ export type SpriteOptions = {
      *
      * If a size still can't be found, default to (0, 0)
      */
-    size?: vec;
+    size?: vec2;
     /**
      * Origin offset from top-left corner, used for rotation and scaling
      *
@@ -34,7 +34,7 @@ export type SpriteOptions = {
      *
      * @see SpriteOptions.size
      */
-    origin?: vec;
+    origin?: vec2;
     /**
      * The scale factor of the sprite
      *
@@ -173,7 +173,7 @@ export type SpriteAttachmentPointOptions = {
      * The position offset of this attachment point, measured from the origin
      * position of this sprite
      */
-    offset: vec;
+    offset: vec2;
 };
 export type SpriteAttachmentPointKeyframe = {
     /**
@@ -188,9 +188,10 @@ export type SpriteAttachmentPointKeyframe = {
     /**
      * The attachment point offset for this keyframe
      */
-    offset: vec;
+    offset: vec2;
 };
-export type SpriteAttachmentPointMap = Record<string, vec>;
+export type SpriteAttachmentPointMap = Record<string, vec2>;
+export declare function isSpriteOptionsData(value: unknown): value is SpriteOptionsData;
 export declare class Sprite {
     private static readonly DEFAULT_OPTIONS;
     private static readonly DEFAULT_ANIMATION_OPTIONS;
@@ -204,9 +205,9 @@ export declare class Sprite {
     private static readonly DEBUG_ATTACHMENT_POINT_LINE_WIDTH;
     private static readonly DEBUG_ATTACHMENT_POINT_SIZE;
     private options;
-    position: vec;
-    size: vec;
-    origin: vec;
+    position: vec2;
+    size: vec2;
+    origin: vec2;
     scale: number;
     rotation: number;
     private _direction;
@@ -223,7 +224,7 @@ export declare class Sprite {
     playAnimation(): void;
     pauseAnimation(): void;
     resetAnimation(): void;
-    getAttachmentPoint(name: string): vec | null;
+    getAttachmentPoint(name: string): vec2 | null;
     update(dt: number): void;
     private updateAnimationOptions;
     private updateAnimationState;
@@ -244,11 +245,11 @@ export declare function spriteOptionsContentProcessor(content: Record<string, {
     name: string;
     type: string;
     content: any;
-    status: number;
+    status: string;
 }>, data: {
     name: string;
     type: string;
     content: any;
-    status: number;
+    status: string;
 }): Promise<void>;
 export {};
