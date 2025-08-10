@@ -169,18 +169,24 @@ export type SpriteAnimationOptions = {
 
   /**
    * The number of frames in this animation
+   *
+   * Default is 1
    */
-  frameCount: number;
+  frameCount?: number;
 
   /**
    * The number of frames per second when playing this animation
+   *
+   * Default is 1
    */
-  frameRate: number;
+  frameRate?: number;
 
   /**
    * The repeat mode for this animation
+   *
+   * Default is SpriteAnimationRepeatMode.Repeat
    */
-  mode: SpriteAnimationRepeatMode;
+  mode?: SpriteAnimationRepeatMode;
 
   /**
    * A list of images to use for each frame
@@ -273,14 +279,14 @@ function isSpriteAnimationOptionsData(
   if (!('name' in value) || typeof value.name !== 'string') {
     return false;
   }
-  if (!('frameCount' in value) || typeof value.frameCount !== 'number') {
+  if ('frameCount' in value && typeof value.frameCount !== 'number') {
     return false;
   }
-  if (!('frameRate' in value) || typeof value.frameRate !== 'number') {
+  if ('frameRate' in value && typeof value.frameRate !== 'number') {
     return false;
   }
   if (
-    !('mode' in value) ||
+    'mode' in value &&
     !Object.values(SpriteAnimationRepeatMode).includes(
       value.mode as SpriteAnimationRepeatMode
     )
@@ -699,16 +705,19 @@ export class Sprite {
     }
 
     if (this.currentAnimationState.playing) {
-      const frameTime = 1 / this.currentAnimationOptions.frameRate;
+      const frameTime = 1 / (this.currentAnimationOptions.frameRate ?? 1);
       this.currentAnimationState.currentFrameTime += dt;
 
       if (this.currentAnimationState.currentFrameTime > frameTime) {
-        const frameCount = this.currentAnimationOptions.frameCount;
+        const frameCount = this.currentAnimationOptions.frameCount ?? 1;
         this.currentAnimationState.currentFrame++;
         this.currentAnimationState.currentFrameTime = 0;
 
         if (this.currentAnimationState.currentFrame >= frameCount) {
-          switch (this.currentAnimationOptions.mode) {
+          const mode =
+            this.currentAnimationOptions.mode ??
+            SpriteAnimationRepeatMode.Repeat;
+          switch (mode) {
             case SpriteAnimationRepeatMode.PlayOnceAndReset:
               this.currentAnimationState.playing = false;
               this.currentAnimationState.currentFrame = 0;

@@ -138,16 +138,22 @@ export type SpriteAnimationOptions = {
     name: string;
     /**
      * The number of frames in this animation
+     *
+     * Default is 1
      */
-    frameCount: number;
+    frameCount?: number;
     /**
      * The number of frames per second when playing this animation
+     *
+     * Default is 1
      */
-    frameRate: number;
+    frameRate?: number;
     /**
      * The repeat mode for this animation
+     *
+     * Default is SpriteAnimationRepeatMode.Repeat
      */
-    mode: SpriteAnimationRepeatMode;
+    mode?: SpriteAnimationRepeatMode;
     /**
      * A list of images to use for each frame
      *
