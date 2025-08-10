@@ -1,6 +1,6 @@
 {
   "name": "@basementuniverse/sprite",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "A component for rendering layered sprites with animations in 2d games",
   "author": "Gordon Larrigan <gordonlarrigan@gmail.com> (https://gordonlarrigan.com)",
   "license": "MIT",
