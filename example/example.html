@@ -1,0 +1,132 @@
+<style>
+
+body {
+  background-color: #333;
+}
+
+canvas {
+  width: 800px;
+  height: 800px;
+  background-color: #222;
+  border: 3px black solid;
+  border-radius: 5px;
+  margin: 20px;
+}
+
+</style>
+<canvas></canvas>
+<script src="../build/index.js"></script>
+<script src="./texture-atlas.js"></script>
+<script>
+
+const canvas = document.querySelector('canvas');
+const context = canvas.getContext('2d');
+
+canvas.width = 800;
+canvas.height = 800;
+
+let sprite = null;
+
+const image = new Image();
+image.src = './character-spritesheet.png';
+image.onload = () => {
+  const frames = textureAtlas(
+    image,
+    {
+      relative: true,
+      width: 9,
+      height: 8,
+      regions: {
+        'idle-up': {
+          x: 0,
+          y: 6,
+        },
+        'idle-down': {
+          x: 0,
+          y: 2,
+        },
+        'idle-left': {
+          x: 0,
+          y: 4,
+        },
+        'idle-right': {
+          x: 0,
+          y: 0,
+        },
+        'walk-up': {
+          x: 1,
+          y: 6,
+          repeat: 4,
+        },
+        'walk-down': {
+          x: 1,
+          y: 2,
+          repeat: 4,
+        },
+        'walk-left': {
+          x: 1,
+          y: 4,
+          repeat: 4,
+        },
+        'walk-right': {
+          x: 1,
+          y: 0,
+          repeat: 4,
+        },
+      },
+    }
+  );
+
+  sprite = new Sprite({
+    // image: frames['idle-down'],
+    position: { x: 400, y: 400 },
+    size: { x: 200, y: 300 },
+    attachmentPoints: [
+      {
+        name: 'test',
+        offset: { x: 20, y: 120 },
+      },
+    ],
+    // origin: { x: 150, y: 100 },
+    // scale: 1,
+    // rotation: 0,
+    debug: true,
+  });
+};
+
+let t = 0;
+
+function update(dt) {
+  if (sprite) {
+    t += dt;
+
+    sprite.update(dt);
+
+    sprite.scale = 1 + Math.sin(t * 0.5) * 0.5;
+    sprite.rotation += dt;
+  }
+}
+
+function draw() {
+  context.clearRect(0, 0, 800, 800);
+
+  context.save();
+  context.strokeStyle = 'white';
+  context.setLineDash([5, 5]);
+  context.strokeRect(100, 100, 600, 600);
+  context.restore();
+
+  if (sprite) {
+    sprite.draw(context);
+  }
+}
+
+function loop() {
+  update(1 / 60);
+  draw();
+  window.requestAnimationFrame(loop);
+}
+
+loop();
+
+</script>
