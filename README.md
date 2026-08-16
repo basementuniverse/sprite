@@ -8,6 +8,15 @@ A basic sprite component for use in 2d games, with animations and directions.
 npm install @basementuniverse/sprite
 ```
 
+For direct browser usage, include the UMD build with a script tag:
+
+```html
+<script src="build/index.js"></script>
+```
+
+The build exposes its exports through the `BasementUniverseSprite` browser
+namespace. It does not add each export directly to `window`.
+
 ## How to use
 
 Create a sprite:
@@ -18,6 +27,18 @@ import { Sprite } from '@basementuniverse/sprite';
 const sprite = new Sprite({
   // options here...
 });
+```
+
+When using the library directly from a browser script, prefix exports with
+`BasementUniverseSprite`:
+
+```html
+<script src="build/index.js"></script>
+<script>
+  const sprite = new BasementUniverseSprite.Sprite({
+    // options here...
+  });
+</script>
 ```
 
 Update the sprite every frame:

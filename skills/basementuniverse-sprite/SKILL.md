@@ -2,6 +2,12 @@
 name: basementuniverse-sprite
 description: >
   Use this skill when working with @basementuniverse/sprite - a 2D sprite component for games
+
+The package publishes a UMD build. In bundlers such as webpack or Vite, use
+named imports from `@basementuniverse/sprite`. When loading the build with a
+browser `<script>` tag, use the `BasementUniverseSprite` global namespace,
+for example `BasementUniverseSprite.Sprite`. The package does not
+publish a separate native ESM build.
   with animations, directions, attachment points, and debug visualization. Invoke when creating
   or modifying game sprites, implementing sprite animations, setting up directional sprites
   (e.g., walk-left, walk-right), working with attachment points for composite sprites, or
