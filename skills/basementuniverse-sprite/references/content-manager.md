@@ -55,12 +55,16 @@ Similar to `SpriteAnimationOptions` but uses asset names for images.
 ```typescript
 type SpriteAnimationOptionsData = Omit<SpriteAnimationOptions, 'images'> & {
   imageNames?: string[];  // Names of image assets for each frame
+  layerImageNames?: {     // Names of image assets for each layer
+    [layerName: string]: string[];
+  };
 };
 ```
 
 **Key Difference:**
 
 - `imageNames` (string[]) instead of `images` (HTMLImageElement[] | HTMLCanvasElement[])
+- `layerImageNames` instead of `layers`, with lists of names in place of lists of images
 
 ## Content Processor
 
@@ -96,6 +100,7 @@ Converts `SpriteOptionsData` to `SpriteOptions` by resolving image names to load
 2. Resolves `imageName` to loaded image from content registry
 3. For each animation and direction:
    - Resolves `imageNames` array to loaded images
+   - Resolves each list in `layerImageNames` to loaded images
    - Converts `SpriteAnimationOptionsData` to `SpriteAnimationOptions`
 4. Converts `SpriteOptionsData` to `SpriteOptions`
 5. Updates `data.content` with processed `SpriteOptions`

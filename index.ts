@@ -17,9 +17,12 @@ export type SpriteOptionsData = Partial<
 
 export type SpriteAnimationOptionsData = Omit<
   SpriteAnimationOptions,
-  'images'
+  'images' | 'layers'
 > & {
   imageNames?: string[];
+  layerImageNames?: {
+    [layerName: string]: string[];
+  };
 };
 
 export type SpriteOptions = {
@@ -199,6 +202,17 @@ export type SpriteAnimationOptions = {
   images?: (HTMLImageElement | HTMLCanvasElement)[];
 
   /**
+   * Named lists of extra images to go with each frame, for example normal maps
+   *
+   * These aren't drawn by the sprite, use `getImage()` to read them. Unlike
+   * `images` there's no fallback to the base image, if a layer doesn't have an
+   * image for a frame then `getImage()` will return null
+   */
+  layers?: {
+    [layerName: string]: (HTMLImageElement | HTMLCanvasElement)[];
+  };
+
+  /**
    * Keyframes for attachment points
    */
   attachmentPointKeyframes?: {
@@ -303,6 +317,22 @@ function isSpriteAnimationOptionsData(
       )
     ) {
       return false;
+    }
+  }
+  if ('layerImageNames' in value) {
+    if (
+      typeof value.layerImageNames !== 'object' ||
+      value.layerImageNames === null
+    ) {
+      return false;
+    }
+    for (const imageNames of Object.values(value.layerImageNames)) {
+      if (
+        !Array.isArray(imageNames) ||
+        !imageNames.every(imageName => typeof imageName === 'string')
+      ) {
+        return false;
+      }
     }
   }
   if (
@@ -661,18 +691,47 @@ export class Sprite {
     }
   }
 
+  /**
+   * The image for the current animation frame, as of the most recent call to
+   * `update()`
+   */
+  public get image(): HTMLImageElement | HTMLCanvasElement | null {
+    return this.currentImage;
+  }
+
+  /**
+   * Get an image for the current frame of the current animation
+   *
+   * Use `direction` to see what the sprite would look like if it was facing
+   * another way, without changing its direction. Use `layer` to get an image
+   * from one of the animation's layers instead of the sprite's image
+   */
+  public getImage(
+    direction: string = this._direction,
+    layer?: string
+  ): HTMLImageElement | HTMLCanvasElement | null {
+    const animation = this.getAnimationOptions(direction);
+    const frame = this.currentAnimationState?.currentFrame ?? 0;
+
+    if (layer !== undefined) {
+      return animation.layers?.[layer]?.[frame] ?? null;
+    }
+
+    return animation.images?.[frame] ?? this.options.image ?? null;
+  }
+
   public getAttachmentPoint(name: string): vec2 | null {
     return this.currentAttachmentPoints?.[name] ?? null;
   }
 
   public update(dt: number) {
-    this.currentAnimationOptions = this.updateAnimationOptions();
+    this.currentAnimationOptions = this.getAnimationOptions(this._direction);
     this.currentAnimationState = this.updateAnimationState(dt);
     this.currentImage = this.updateImage();
     this.currentAttachmentPoints = this.updateAttachmentPoints();
   }
 
-  private updateAnimationOptions(): SpriteAnimationOptions {
+  private getAnimationOptions(direction: string): SpriteAnimationOptions {
     if (!(this._animation in this.options.animations)) {
       throw new Error(`Invalid animation "${this._animation}"`);
     }
@@ -684,8 +743,8 @@ export class Sprite {
       );
     }
 
-    if (this._direction in this.options.animations[this._animation]) {
-      return this.options.animations[this._animation][this._direction];
+    if (direction in this.options.animations[this._animation]) {
+      return this.options.animations[this._animation][direction];
     }
 
     if ('*' in this.options.animations[this._animation]) {
@@ -744,20 +803,7 @@ export class Sprite {
       return null;
     }
 
-    if (
-      !this.currentAnimationOptions.images ||
-      this.currentAnimationOptions.images.length === 0
-    ) {
-      return this.options.image ?? null;
-    }
-
-    return (
-      this.currentAnimationOptions.images[
-        this.currentAnimationState.currentFrame
-      ] ??
-      this.options.image ??
-      null
-    );
+    return this.getImage();
   }
 
   private updateAttachmentPoints(): SpriteAttachmentPointMap | null {
@@ -989,6 +1035,20 @@ export async function spriteOptionsContentProcessor(
           result.animations[animationName][directionName].images =
             direction.imageNames.map(getImageFromContent);
           delete result.animations[animationName][directionName].imageNames;
+        }
+
+        if (direction.layerImageNames) {
+          result.animations[animationName][directionName].layers =
+            Object.fromEntries(
+              Object.entries(direction.layerImageNames).map(
+                ([layerName, imageNames]) => [
+                  layerName,
+                  imageNames.map(getImageFromContent),
+                ]
+              )
+            );
+          delete result.animations[animationName][directionName]
+            .layerImageNames;
         }
       }
     }

@@ -78,6 +78,24 @@ Render the sprite every frame:
 sprite.draw(context);
 ```
 
+Get the image for the current frame:
+
+```ts
+sprite.image; // the image that draw() will use, updated by sprite.update()
+```
+
+Get the same frame for another direction, without changing the sprite's direction:
+
+```ts
+sprite.getImage('left');
+```
+
+Get an image from one of the animation's layers:
+
+```ts
+sprite.getImage(sprite.direction, 'normal');
+```
+
 ## Options
 
 ```ts
@@ -235,6 +253,17 @@ export type SpriteAnimationOptions = {
   images?: (HTMLImageElement | HTMLCanvasElement)[];
 
   /**
+   * Named lists of extra images to go with each frame, for example normal maps
+   *
+   * These aren't drawn by the sprite, use `getImage()` to read them. Unlike
+   * `images` there's no fallback to the base image, if a layer doesn't have an
+   * image for a frame then `getImage()` will return null
+   */
+  layers?: {
+    [layerName: string]: (HTMLImageElement | HTMLCanvasElement)[];
+  };
+
+  /**
    * Keyframes for attachment points
    */
   attachmentPointKeyframes?: {
@@ -271,3 +300,4 @@ This function will take a JSON object resembling the `SpriteOptions` type (see b
 * The JSON object may have an `imageName: string` field instead of `image`. The image name will be used to fetch the image from the content manager, and the `imageName` field will then be replaced with an `image` field, containing the fetched image.
 
 * Similarly, the JSON object may have an `imageNames: string[]` field instead of `images` in each animation. These images will be loaded from the content manager and the `imageNames` field will be replaced with an `images` field, containing the fetched images.
+* Each animation may also have a `layerImageNames: { [layerName: string]: string[] }` field instead of `layers`, which is converted in the same way.

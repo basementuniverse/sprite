@@ -76,6 +76,11 @@ sprite.animation: string
 ```
 Current animation name (getter/setter). Must be a valid animation name from the `animations` object.
 
+```typescript
+sprite.image: HTMLImageElement | HTMLCanvasElement | null
+```
+The image for the current frame, as of the most recent `update()` call (read-only). This is `null` before the first `update()`.
+
 ### Public Methods
 
 #### update(dt: number): void
@@ -118,6 +123,18 @@ Pauses animation playback. Animation will remain on current frame until `playAni
 #### resetAnimation(): void
 
 Resets animation to frame 0. Useful when switching animations or restarting.
+
+#### getImage(direction?: string, layer?: string): HTMLImageElement | HTMLCanvasElement | null
+
+Gets an image for the current frame of the current animation, without changing the sprite's state.
+
+**Parameters:**
+- `direction`: The direction to look up. Defaults to the sprite's current direction. This uses the same fallbacks as `update()`: the exact direction, then `'*'`, then the animation's first direction
+- `layer`: The name of a layer from the animation's `layers`. If omitted, returns the sprite's image
+
+**Returns:**
+- Without `layer`: the frame's image, or the base image, or `null`
+- With `layer`: the layer's image for this frame, or `null`. Layers never fall back to the base image
 
 #### getAttachmentPoint(name: string): vec2 | null
 
@@ -188,6 +205,9 @@ type SpriteAnimationOptions = {
   frameRate?: number;
   mode?: SpriteAnimationRepeatMode;
   images?: (HTMLImageElement | HTMLCanvasElement)[];
+  layers?: {
+    [layerName: string]: (HTMLImageElement | HTMLCanvasElement)[];
+  };
   attachmentPointKeyframes?: {
     [attachmentPointName: string]: SpriteAttachmentPointKeyframe[];
   };
@@ -201,6 +221,7 @@ type SpriteAnimationOptions = {
 - `frameRate`: Frames per second. Default: `1`
 - `mode`: Repeat mode. Default: `SpriteAnimationRepeatMode.Repeat`
 - `images`: Array of images for each frame (can be shorter than frameCount)
+- `layers`: Named lists of extra images for each frame, read with `getImage()` and not drawn by the sprite
 - `attachmentPointKeyframes`: Per-frame attachment point offsets
 
 ### SpriteAttachmentPointOptions

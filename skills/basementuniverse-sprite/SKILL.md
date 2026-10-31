@@ -258,6 +258,7 @@ const sprite = new Sprite({
 - **Rotation**: Measured in radians
 - **Frame indexing**: Zero-based (frame 0 is the first frame)
 - **Image fallback**: If animation frame image is missing, falls back to base image
+- **Layers**: `layers` images are read with `getImage(direction, layer)` and aren't drawn by the sprite. A missing layer image returns `null` and never falls back to the base image
 - **Empty sprites**: Sprites can exist without images (useful as attachment point hosts)
 - **Transform order**: Translate(position) → Scale(scale) → Rotate(rotation)
 

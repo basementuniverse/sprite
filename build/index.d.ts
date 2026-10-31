@@ -7,8 +7,11 @@ export type SpriteOptionsData = Partial<Omit<SpriteOptions, 'image' | 'preRender
         };
     };
 };
-export type SpriteAnimationOptionsData = Omit<SpriteAnimationOptions, 'images'> & {
+export type SpriteAnimationOptionsData = Omit<SpriteAnimationOptions, 'images' | 'layers'> & {
     imageNames?: string[];
+    layerImageNames?: {
+        [layerName: string]: string[];
+    };
 };
 export type SpriteOptions = {
     /**
@@ -164,6 +167,16 @@ export type SpriteAnimationOptions = {
      */
     images?: (HTMLImageElement | HTMLCanvasElement)[];
     /**
+     * Named lists of extra images to go with each frame, for example normal maps
+     *
+     * These aren't drawn by the sprite, use `getImage()` to read them. Unlike
+     * `images` there's no fallback to the base image, if a layer doesn't have an
+     * image for a frame then `getImage()` will return null
+     */
+    layers?: {
+        [layerName: string]: (HTMLImageElement | HTMLCanvasElement)[];
+    };
+    /**
      * Keyframes for attachment points
      */
     attachmentPointKeyframes?: {
@@ -230,9 +243,22 @@ export declare class Sprite {
     playAnimation(): void;
     pauseAnimation(): void;
     resetAnimation(): void;
+    /**
+     * The image for the current animation frame, as of the most recent call to
+     * `update()`
+     */
+    get image(): HTMLImageElement | HTMLCanvasElement | null;
+    /**
+     * Get an image for the current frame of the current animation
+     *
+     * Use `direction` to see what the sprite would look like if it was facing
+     * another way, without changing its direction. Use `layer` to get an image
+     * from one of the animation's layers instead of the sprite's image
+     */
+    getImage(direction?: string, layer?: string): HTMLImageElement | HTMLCanvasElement | null;
     getAttachmentPoint(name: string): vec2 | null;
     update(dt: number): void;
-    private updateAnimationOptions;
+    private getAnimationOptions;
     private updateAnimationState;
     private updateImage;
     private updateAttachmentPoints;
